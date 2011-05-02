@@ -28,6 +28,12 @@ Live-Count makes extensive use of Google AppEngine's memcache implementation.  T
 
 If writeback loads are higher than desired on frequently updated counters, Live-Count includes the option to delay writebacks until a given batch size is reached.  This effectively allows the developer to select the appropriate tradoff between performance and tolerance for lost counts each time a counter is incremented.
 
+# Scalability Limiatations
+
+Another factor that affects scalability is the rate at which appengine task queues can writeback counter updates (100 tasks/second per queue).  To effectively increase this limit, Live-Count could be extended to use more than one named queue. 
+
+The maximum number of queues (10 for free apps / 100 for paid apps) could also be reached.  At this point, a different writeback strategy should be used.  One option would be to batch updates for several different counters in one memcache object and only create a writeback worker when the batch size is reached.
+
 # Usage at Pulse
 
 Live-Counts has been used extensively at [Pulse News](http://pulsene.ws) for counting everything from share and click events to mobile client A/B test results. 
