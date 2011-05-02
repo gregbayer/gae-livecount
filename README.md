@@ -9,7 +9,7 @@ Live-Count counters are extremely simple to use.  Just import the module and cal
 To try Live-Count:
 
 1. Make sure you have the latest version of the Google AppEngine python sdk
-2. git clone git://github.com/gregbayer/live-count.git
+2. git clone git://github.com/gregbayer/gae-live-count.git
 3. Point the appengine launcher at the live-count directory and start the project locally
 4. Navigate to http://localhost:8080/counter/counter_admin
 5. Choose to login as an administrator
