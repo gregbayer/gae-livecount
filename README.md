@@ -7,6 +7,7 @@ Live-Count counters are extremely simple to use.  Just import the module and cal
 # Getting started
 
 To try Live-Count:
+
 1. Make sure you have the latest version of the Google AppEngine python sdk
 2. git clone git://github.com/gregbayer/live-count.git
 3. Point the appengine launcher at the live-count directory and start the project locally
@@ -14,6 +15,7 @@ To try Live-Count:
 5. Choose to login as an administrator
 
 To add Live-Count to your project:
+
 1. git clone git://github.com/gregbayer/live-count.git
 2. Add entries to your app.yaml and queue.yaml based on included files.
 3. Copy the live-count directory into your appengine project
