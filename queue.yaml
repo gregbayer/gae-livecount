@@ -3,6 +3,6 @@ queue:
   rate: 10/s
   bucket_size: 100
 - name: writebacks
-  rate: 10/s
+  rate: 100/s
   bucket_size: 100
 
