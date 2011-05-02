@@ -30,7 +30,7 @@ If writeback loads are higher than desired on frequently updated counters, Live-
 
 # Scalability Limiatations
 
-Another factor that affects scalability is the rate at which appengine task queues can writeback counter updates (100 tasks/second per queue).  To effectively increase this limit, Live-Count could be extended to use more than one named queue. 
+One factor that affects Live-Count's scalability is the rate at which appengine task queues can writeback counter updates (100 tasks/second per queue).  To effectively increase this limit, Live-Count could be extended to use more than one named queue. 
 
 The maximum number of queues (10 for free apps / 100 for paid apps) could also be reached.  At this point, a different writeback strategy should be used.  One option would be to batch updates for several different counters in one memcache object and only create a writeback worker when the batch size is reached.
 
