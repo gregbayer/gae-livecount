@@ -1,0 +1,46 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <title> GAE-Live-Count - Counter Admin </title>
+  </head>
+  <body>
+
+	<form action="/livecount/counter_admin" method="get">      
+      <input type="hidden" name="counter" value="{{ counter_name }}" />
+      <h2>Namespace: <input type="input" name="namespace" value="{{ namespace }}" /></h2>
+      <p><input type="submit" value="Change Namespace" /></p>
+    </form>
+
+    </form>
+
+	<h2>Top 20 WriteBehindCounter Values:</h2>
+	<p>
+	{% for counter in counters %}
+    {{ counter.key.name }} = {{ counter.count }}<br>
+    {% endfor %}
+	</p>
+	
+    <p><input type="button" value="Refresh List" onClick="location.href='/livecount/counter_admin?namespace={{ namespace }}&counter_name={{ counter_name }}&delta={{ delta }}'"/></p>
+
+	{% if modified_counter %}
+	<h2>Upadated counter:</h2>
+	<p>
+    {{ modified_counter.key.name }} = {{ modified_counter.count }}<br>
+	</p>
+	{% endif %}
+	
+	<h2>Memcache Stats:</h2>
+	<p>{{ stats }}</p>
+    
+    <h2>Modify Counter:</h2>
+    <form action="/livecount/counter_admin" method="post">      
+      <p>Counter Name: <input type="input" name="counter" value="{{ counter_name }}" /></p>
+      <p>Namespace: <input type="input" name="namespace" value="{{ namespace }}" /></p>
+      <p>Delta: <input type="input" name="delta" value="{{ delta }}" /></p>
+      <p><input type="submit" name="type" value="Increment Counter" /></p>
+      <p><input type="submit" name="type" value="Decrement Counter" /></p>
+    </form>
+
+
+  </body>
+</html> 

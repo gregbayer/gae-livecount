@@ -1,0 +1,7 @@
+indexes:
+- kind: WriteBehindCounter
+  properties:
+  - name: namespace
+  - name: count
+    direction: desc
+
