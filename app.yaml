@@ -23,18 +23,11 @@ handlers:
   script: livecount/counter_admin.py
   login: admin
 
-- url: /write_behind_counter/worker
-  script: livecount/write_behind_counter.py
-  login: admin 
-
-- url: /livecount/clear_entire_cache
-  script: livecount/write_behind_counter.py
+- url: /livecount/.*
+  script: livecount/counter.py
   login: admin
 
-- url: /livecount/writeback_all_counters
-  script: livecount/write_behind_counter.py
-  login: admin
-
-- url: /livecount/get_count
-  script: livecount/write_behind_counter.py
-  login: admin
+# For convenience / demo only
+# redirects to counter admin page
+- url: .*
+  script: livecount/counter.py

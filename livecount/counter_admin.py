@@ -20,8 +20,8 @@ import os
 import wsgiref.handlers
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
-from livecount import write_behind_counter
-from livecount.write_behind_counter import WriteBehindCounter
+from livecount import counter
+from livecount.counter import LiveCountCounter
 import logging
 import simplejson
 
@@ -40,16 +40,16 @@ class CounterHandler(webapp.RequestHandler):
     delta = self.request.get('delta')
     if not delta:
       delta = 0
-    logging.info("getting WriteBehindCounters for namespace = " + str(namespace))
+    logging.info("getting LiveCountCounters for namespace = " + str(namespace))
     modified_counter = None
     if counter_name:
-      modified_counter = WriteBehindCounter.get_by_key_name(namespace + ":" + counter_name)
+      modified_counter = LiveCountCounter.get_by_key_name(namespace + ":" + counter_name)
     
-    counter_entities_query = WriteBehindCounter.all().filter("namespace = ", namespace).order('-count')
+    counter_entities_query = LiveCountCounter.all().filter("namespace = ", namespace).order('-count')
     counter_entities = counter_entities_query.fetch(20)
     logging.info("counter_entities: " + str(counter_entities))
     
-    stats = write_behind_counter.GetMemcacheStats()
+    stats = counter.GetMemcacheStats()
     template_values = {
       'namespace': namespace,
       'counters': counter_entities,
@@ -72,9 +72,9 @@ class CounterHandler(webapp.RequestHandler):
 #        counter_list.append(counter_name)
 #    logging.info("counter_list: " + str(counter_list))
     if type == "Increment Counter":
-      write_behind_counter.LoadAndIncrementCounter(counter_name, long(delta), namespace=namespace)
+      counter.LoadAndIncrementCounter(counter_name, long(delta), namespace=namespace)
     elif type == "Decrement Counter":
-      write_behind_counter.LoadAndDecrementCounter(counter_name, long(delta), namespace=namespace)
+      counter.LoadAndDecrementCounter(counter_name, long(delta), namespace=namespace)
     self.redirect("/livecount/counter_admin?namespace=" + namespace + "&counter_name=" + counter_name + "&delta=" + delta)
 
 
@@ -94,13 +94,13 @@ class GetCounterHandler(webapp.RequestHandler):
     
     if counter_name:
         logging.info("querying counter directly for counter_name = " + str(counter_name) + ", namespace = " + str(namespace))
-        count = write_behind_counter.LoadAndGetCount(counter_name, namespace=namespace)
+        count = counter.LoadAndGetCount(counter_name, namespace=namespace)
         
         self.response.set_status(200)
         self.response.out.write(count)
     else:
-        logging.info("querying datastore for WriteBehindCounters for counter_name = " + str(counter_name) + ", namespace = " + str(namespace))
-        counter_entities_query = WriteBehindCounter.all().order('-count')
+        logging.info("querying datastore for LiveCountCounters for counter_name = " + str(counter_name) + ", namespace = " + str(namespace))
+        counter_entities_query = LiveCountCounter.all().order('-count')
         if counter_name:
             counter_entities_query.filter("counter_name = ", counter_name)
         if namespace:

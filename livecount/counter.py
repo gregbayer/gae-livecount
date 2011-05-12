@@ -31,7 +31,7 @@ import wsgiref.handlers
 """
 
 
-class WriteBehindCounter(db.Model):
+class LiveCountCounter(db.Model):
     count = db.IntegerProperty()
     namespace = db.StringProperty(default="default")
     
@@ -45,8 +45,8 @@ def LoadAndGetCount(name, namespace='default'):
     count =  memcache.get(name, namespace=namespace) 
     if count is None:
         # See if this counter already exists in the datastore
-        key = WriteBehindCounter.KeyName(name, namespace)
-        record = WriteBehindCounter.get_by_key_name(key)
+        key = LiveCountCounter.KeyName(name, namespace)
+        record = LiveCountCounter.get_by_key_name(key)
         count = None
         # If counter exists in the datastore, but is not currently in memcache, add it
         if record:
@@ -67,8 +67,8 @@ def LoadAndIncrementCounter(name, delta, namespace='default', batch_size=None):
     current_count = None
     if memcache.incr(name, delta, namespace=namespace) is None:
         # See if this counter already exists in the datastore
-        key = WriteBehindCounter.KeyName(name, namespace)
-        record = WriteBehindCounter.get_by_key_name(key)
+        key = LiveCountCounter.KeyName(name, namespace)
+        record = LiveCountCounter.get_by_key_name(key)
         if record:
             # Load last value from datastore
             memcache.add(name, record.count + delta, namespace=namespace)
@@ -83,7 +83,7 @@ def LoadAndIncrementCounter(name, delta, namespace='default', batch_size=None):
     if not batch_size or (batch_size and current_count % batch_size == 0):
         if memcache.add(name + '_dirty', delta, namespace=namespace):
             #logging.info("Adding task to taskqueue. counter value = " + str(memcache.get(name, namespace=namespace)))
-            taskqueue.add(queue_name='writebacks', url='/write_behind_counter/worker', params={'name': name, 'namespace': namespace})
+            taskqueue.add(queue_name='writebacks', url='/livecount/worker', params={'name': name, 'namespace': namespace})
 
 
 def LoadAndDecrementCounter(name, delta, namespace='default', batch_size=None):
@@ -91,19 +91,19 @@ def LoadAndDecrementCounter(name, delta, namespace='default', batch_size=None):
     LoadAndIncrementCounter(name, -delta, namespace, batch_size)
    
 
-class WriteBehindCounterWorker(webapp.RequestHandler):
+class LiveCountCounterWorker(webapp.RequestHandler):
     def post(self):
-        #logging.info("Running WriteBehindCounterWorker...")
+        #logging.info("Running LiveCountCounterWorker...")
         name = self.request.get('name')
         namespace = self.request.get('namespace')
-        key = WriteBehindCounter.KeyName(name, namespace)
+        key = LiveCountCounter.KeyName(name, namespace)
         #logging.info("Worker for name = " + name + ", namespace = " + namespace + ", key = " + key)
         memcache.delete(name + '_dirty', namespace=namespace)
         value = memcache.get(name, namespace=namespace)
         if value is None:
-            logging.error('WriteBehindCounterWorker: Failure for key=%s', key)
+            logging.error('LiveCountCounterWorker: Failure for key=%s', key)
             return
-        WriteBehindCounter(key_name=key, count=value, namespace=namespace).put()
+        LiveCountCounter(key_name=key, count=value, namespace=namespace).put()
 
 
 class ClearEntireCacheHandler(webapp.RequestHandler):
@@ -136,12 +136,18 @@ class GetCountHandler(webapp.RequestHandler):
     def get(self):
         name = self.request.get('name')
         namespace = self.request.get('namespace')
-        count = write_behind_counter.LoadAndGetCount(name, namespace)
+        count = counter.LoadAndGetCount(name, namespace)
         if count:
             self.response.set_status(200) 
             self.response.out.write(count)
         else:
             self.response.set_status(404)
+            
+class RedirectToCounterAdminHandler(webapp.RequestHandler):
+    """ For convenience / demo purposes, redirect to counter admin page.
+    """
+    def get(self):
+        self.redirect('/livecount/counter_admin')
             
 def GetMemcacheStats():
     stats = memcache.get_stats()
@@ -151,10 +157,11 @@ def GetMemcacheStats():
 def main():
     logging.getLogger().setLevel(logging.DEBUG)
     application = webapp.WSGIApplication([
-         ('/write_behind_counter/worker', WriteBehindCounterWorker),
+         ('/livecount/worker', LiveCountCounterWorker),
          ('/livecount/clear_entire_cache', ClearEntireCacheHandler),
          ('/livecount/writeback_all_counters', WritebackAllCountersHandler),
-         ('/livecount/get_count', GetCountHandler)
+         ('/livecount/get_count', GetCountHandler),
+         ('/', RedirectToCounterAdminHandler)
     ], debug=True)
     wsgiref.handlers.CGIHandler().run(application)
 

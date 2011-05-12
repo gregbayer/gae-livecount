@@ -11,7 +11,7 @@ To try Live-Count:
 1. Make sure you have the latest version of the Google AppEngine python sdk
 2. git clone git://github.com/gregbayer/gae-live-count.git
 3. Point the appengine launcher at the live-count directory and start the project locally
-4. Navigate to http://localhost:8080/counter/counter_admin
+4. Navigate to http://localhost:8080/livecount/counter_admin
 5. Choose to login as an administrator
 
 To add Live-Count to your project:
@@ -19,8 +19,8 @@ To add Live-Count to your project:
 1. git clone git://github.com/gregbayer/live-count.git
 2. Add entries to your app.yaml and queue.yaml based on included files.
 3. Copy the live-count directory into your appengine project
-4. Include "from counters import write_behind_counter" at the top of you python file
-5. Call write_behind_counter.LoadAndIncrementCounter(...) as in example.py
+4. Include "from counters import counter" at the top of you python file
+5. Call counter.LoadAndIncrementCounter(...) as in example.py
 
 # Performance and CAP tradeoffs
 
@@ -30,9 +30,9 @@ If writeback loads are higher than desired on frequently updated counters, Live-
 
 # Scalability Limiatations
 
-One factor that affects Live-Count's scalability is the rate at which appengine task queues can writeback counter updates (100 tasks/second per queue).  To effectively increase this limit, Live-Count could be extended to use more than one named queue. 
+One factor that affects Live-Count's scalability is the rate at which appengine task queues can writeback counter updates (xxx tasks/second per queue, see [Quotas and Limits for Push Queues](http://code.google.com/appengine/docs/python/taskqueue/overview-push.html)).  To effectively increase this limit, Live-Count could be extended to use more than one named queue. 
 
-The maximum number of queues (10 for free apps / 100 for paid apps) could also be reached.  At this point, a different writeback strategy should be used.  One option would be to batch updates for several different counters in one memcache object and only create a writeback worker when the batch size is reached.
+The maximum number of queues could also be reached.  At this point, a different writeback strategy should be used.  One option would be to batch updates for several different counters in one memcache object and only create a writeback worker when the batch size is reached.
 
 # Usage at Pulse
 

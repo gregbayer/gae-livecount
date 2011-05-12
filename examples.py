@@ -1,9 +1,9 @@
 import logging
-from livecount import write_behind_counter
+from livecount import counter
 
 
 def count_event(event):
-    write_behind_counter.LoadAndIncrementCounter(event, 1)
+    counter.LoadAndIncrementCounter(event, 1)
 
 
 def advanced_event_counts(type, device, url, version):
@@ -12,7 +12,7 @@ def advanced_event_counts(type, device, url, version):
     domain = extract_feed_domain(story_url);
     namespace = "website_" + version
 #    logging.info("Bar " + type + " for device: " + device + ", domain: " + domain)
-    write_behind_counter.LoadAndIncrementCounter(type, 1, namespace, batch_size)
-    write_behind_counter.LoadAndIncrementCounter(type + "__" + device, 1, namespace, batch_size)
-    write_behind_counter.LoadAndIncrementCounter(type + "__" + device + "__" + domain, 1, namespace, batch_size)
+    counter.LoadAndIncrementCounter(type, 1, namespace, batch_size)
+    counter.LoadAndIncrementCounter(type + "__" + device, 1, namespace, batch_size)
+    counter.LoadAndIncrementCounter(type + "__" + device + "__" + domain, 1, namespace, batch_size)
 

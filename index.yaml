@@ -1,5 +1,5 @@
 indexes:
-- kind: WriteBehindCounter
+- kind: LiveCountCounter
   properties:
   - name: namespace
   - name: count
