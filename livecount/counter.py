@@ -65,13 +65,22 @@ def LoadAndIncrementCounter(name, delta, namespace='default', batch_size=None):
     # the same value from the datastore, one's update may be lost.
     # TODO: Think more about whether we care about this...
     current_count = None
-    if memcache.incr(name, delta, namespace=namespace) is None:
+    
+    incr_reslt = None
+    if delta >= 0:
+        incr_reslt = memcache.incr(name, delta, namespace=namespace)
+    else: # Since increment by negative number is not supported, convert to decrement
+        incr_reslt = memcache.decr(name, -delta, namespace=namespace)
+    
+    if incr_reslt is None:
         # See if this counter already exists in the datastore
         key = LiveCountCounter.KeyName(name, namespace)
         record = LiveCountCounter.get_by_key_name(key)
         if record:
             # Load last value from datastore
-            memcache.add(name, record.count + delta, namespace=namespace)
+            new_counter_value = record.count + delta
+            if new_counter_value < 0: new_counter_value = 0  # To match behavior of memcache.decr(), don't allow negative values
+            memcache.add(name, new_counter_value, namespace=namespace)
             if batch_size: current_count = record.count
         else:
             # Start new counter
