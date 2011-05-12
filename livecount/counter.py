@@ -31,7 +31,7 @@ import wsgiref.handlers
 """
 
 
-class LiveCountCounter(db.Model):
+class LivecountCounter(db.Model):
     count = db.IntegerProperty()
     namespace = db.StringProperty(default="default")
     
@@ -45,8 +45,8 @@ def load_and_get_count(name, namespace='default'):
     count =  memcache.get(name, namespace=namespace) 
     if count is None:
         # See if this counter already exists in the datastore
-        key = LiveCountCounter.KeyName(name, namespace)
-        record = LiveCountCounter.get_by_key_name(key)
+        key = LivecountCounter.KeyName(name, namespace)
+        record = LivecountCounter.get_by_key_name(key)
         count = None
         # If counter exists in the datastore, but is not currently in memcache, add it
         if record:
@@ -74,8 +74,8 @@ def load_and_increment_counter(name, delta, namespace='default', batch_size=None
     
     if incr_reslt is None:
         # See if this counter already exists in the datastore
-        key = LiveCountCounter.KeyName(name, namespace)
-        record = LiveCountCounter.get_by_key_name(key)
+        key = LivecountCounter.KeyName(name, namespace)
+        record = LivecountCounter.get_by_key_name(key)
         if record:
             # Load last value from datastore
             new_counter_value = record.count + delta
@@ -100,19 +100,19 @@ def load_and_decrement_counter(name, delta, namespace='default', batch_size=None
     load_and_increment_counter(name, -delta, namespace, batch_size)
    
 
-class LiveCountCounterWorker(webapp.RequestHandler):
+class LivecountCounterWorker(webapp.RequestHandler):
     def post(self):
-        #logging.info("Running LiveCountCounterWorker...")
+        #logging.info("Running LivecountCounterWorker...")
         name = self.request.get('name')
         namespace = self.request.get('namespace')
-        key = LiveCountCounter.KeyName(name, namespace)
+        key = LivecountCounter.KeyName(name, namespace)
         #logging.info("Worker for name = " + name + ", namespace = " + namespace + ", key = " + key)
         memcache.delete(name + '_dirty', namespace=namespace)
         value = memcache.get(name, namespace=namespace)
         if value is None:
-            logging.error('LiveCountCounterWorker: Failure for key=%s', key)
+            logging.error('LivecountCounterWorker: Failure for key=%s', key)
             return
-        LiveCountCounter(key_name=key, count=value, namespace=namespace).put()
+        LivecountCounter(key_name=key, count=value, namespace=namespace).put()
 
 
 class ClearEntireCacheHandler(webapp.RequestHandler):
@@ -168,7 +168,7 @@ def GetMemcacheStats():
 def main():
     logging.getLogger().setLevel(logging.DEBUG)
     application = webapp.WSGIApplication([
-         ('/livecount/worker', LiveCountCounterWorker),
+         ('/livecount/worker', LivecountCounterWorker),
          ('/livecount/clear_entire_cache', ClearEntireCacheHandler),
          ('/livecount/writeback_all_counters', WritebackAllCountersHandler),
          ('/livecount/get_count', GetCountHandler),

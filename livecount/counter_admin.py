@@ -21,7 +21,7 @@ import wsgiref.handlers
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 from livecount import counter
-from livecount.counter import LiveCountCounter
+from livecount.counter import LivecountCounter
 import logging
 import simplejson
 
@@ -40,12 +40,12 @@ class CounterHandler(webapp.RequestHandler):
     delta = self.request.get('delta')
     if not delta:
       delta = 0
-    logging.info("getting LiveCountCounters for namespace = " + str(namespace))
+    logging.info("getting LivecountCounters for namespace = " + str(namespace))
     modified_counter = None
     if counter_name:
-      modified_counter = LiveCountCounter.get_by_key_name(namespace + ":" + counter_name)
+      modified_counter = LivecountCounter.get_by_key_name(namespace + ":" + counter_name)
     
-    counter_entities_query = LiveCountCounter.all().filter("namespace = ", namespace).order('-count')
+    counter_entities_query = LivecountCounter.all().filter("namespace = ", namespace).order('-count')
     counter_entities = counter_entities_query.fetch(20)
     logging.info("counter_entities: " + str(counter_entities))
     
@@ -99,8 +99,8 @@ class GetCounterHandler(webapp.RequestHandler):
         self.response.set_status(200)
         self.response.out.write(count)
     else:
-        logging.info("querying datastore for LiveCountCounters for counter_name = " + str(counter_name) + ", namespace = " + str(namespace))
-        counter_entities_query = LiveCountCounter.all().order('-count')
+        logging.info("querying datastore for LivecountCounters for counter_name = " + str(counter_name) + ", namespace = " + str(namespace))
+        counter_entities_query = LivecountCounter.all().order('-count')
         if counter_name:
             counter_entities_query.filter("counter_name = ", counter_name)
         if namespace:
