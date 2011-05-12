@@ -10,7 +10,7 @@ builtins:
 
 admin_console:
   pages:
-  
+
 inbound_services:
 - warmup
 
@@ -18,26 +18,23 @@ handlers:
 - url: /livecount/counter_admin
   script: livecount/counter_admin.py
   login: admin
-  
+
 - url: /livecount/get_counter
   script: livecount/counter_admin.py
   login: admin
-  
+
 - url: /write_behind_counter/worker
   script: livecount/write_behind_counter.py
   login: admin 
-  
+
 - url: /livecount/clear_entire_cache
   script: livecount/write_behind_counter.py
   login: admin
-  
+
 - url: /livecount/writeback_all_counters
   script: livecount/write_behind_counter.py
   login: admin
-  
+
 - url: /livecount/get_count
   script: livecount/write_behind_counter.py
   login: admin
-
-
-  
