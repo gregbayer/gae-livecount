@@ -47,6 +47,6 @@ Livecount is by no means the first or only attempt at real-time counters.  Here 
 * [Effective memcache](http://code.google.com/appengine/articles/scaling/memcache.html)
 * [Google Cookbook](http://appengine-cookbook.appspot.com/recipe/high-concurrency-counters-without-sharding/)
 * [fastpageviews](http://code.google.com/p/fastpageviews/)
-
+* [Rainbird (Kevin Weil / Twitter)](http://www.slideshare.net/kevinweil/rainbird-realtime-analytics-at-twitter-strata-2011)
 
 
