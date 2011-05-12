@@ -2,7 +2,7 @@ queue:
 - name: default
   rate: 10/s
   bucket_size: 100
-- name: writebacks
+- name: livecount_writebacks
   rate: 100/s
   bucket_size: 100
 

@@ -92,7 +92,7 @@ def load_and_increment_counter(name, delta, namespace='default', batch_size=None
     if not batch_size or (batch_size and current_count % batch_size == 0):
         if memcache.add(name + '_dirty', delta, namespace=namespace):
             #logging.info("Adding task to taskqueue. counter value = " + str(memcache.get(name, namespace=namespace)))
-            taskqueue.add(queue_name='writebacks', url='/livecount/worker', params={'name': name, 'namespace': namespace})
+            taskqueue.add(queue_name='livecount_writebacks', url='/livecount/worker', params={'name': name, 'namespace': namespace})
 
 
 def load_and_decrement_counter(name, delta, namespace='default', batch_size=None):
