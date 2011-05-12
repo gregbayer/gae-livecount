@@ -72,9 +72,9 @@ class CounterHandler(webapp.RequestHandler):
 #        counter_list.append(counter_name)
 #    logging.info("counter_list: " + str(counter_list))
     if type == "Increment Counter":
-      counter.LoadAndIncrementCounter(counter_name, long(delta), namespace=namespace)
+      counter.load_and_increment_counter(counter_name, long(delta), namespace=namespace)
     elif type == "Decrement Counter":
-      counter.LoadAndDecrementCounter(counter_name, long(delta), namespace=namespace)
+      counter.load_and_decrement_counter(counter_name, long(delta), namespace=namespace)
     self.redirect("/livecount/counter_admin?namespace=" + namespace + "&counter_name=" + counter_name + "&delta=" + delta)
 
 
@@ -94,7 +94,7 @@ class GetCounterHandler(webapp.RequestHandler):
     
     if counter_name:
         logging.info("querying counter directly for counter_name = " + str(counter_name) + ", namespace = " + str(namespace))
-        count = counter.LoadAndGetCount(counter_name, namespace=namespace)
+        count = counter.load_and_get_count(counter_name, namespace=namespace)
         
         self.response.set_status(200)
         self.response.out.write(count)

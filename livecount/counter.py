@@ -40,7 +40,7 @@ class LiveCountCounter(db.Model):
         return namespace + ':' + name
 
 
-def LoadAndGetCount(name, namespace='default'):
+def load_and_get_count(name, namespace='default'):
     #logging.info("Getting counter, name = " + name + ", namespace = " + namespace)
     count =  memcache.get(name, namespace=namespace) 
     if count is None:
@@ -54,7 +54,7 @@ def LoadAndGetCount(name, namespace='default'):
             memcache.add(name, count, namespace=namespace)
     return count
 
-def LoadAndIncrementCounter(name, delta, namespace='default', batch_size=None):
+def load_and_increment_counter(name, delta, namespace='default', batch_size=None):
     """
     Setting batch size allows control of how often a writeback worker is created.
     By default, this happens at every increment to ensure maximum durability.
@@ -95,9 +95,9 @@ def LoadAndIncrementCounter(name, delta, namespace='default', batch_size=None):
             taskqueue.add(queue_name='writebacks', url='/livecount/worker', params={'name': name, 'namespace': namespace})
 
 
-def LoadAndDecrementCounter(name, delta, namespace='default', batch_size=None):
+def load_and_decrement_counter(name, delta, namespace='default', batch_size=None):
     #logging.info("Decrementing counter, name = " + name)
-    LoadAndIncrementCounter(name, -delta, namespace, batch_size)
+    load_and_increment_counter(name, -delta, namespace, batch_size)
    
 
 class LiveCountCounterWorker(webapp.RequestHandler):
@@ -118,12 +118,12 @@ class LiveCountCounterWorker(webapp.RequestHandler):
 class ClearEntireCacheHandler(webapp.RequestHandler):
     """ Clears entire memcache
     """
-    
     def get(self):
         logging.info("Deleting all counters in memcache. Any counts not previously flushed will be lost.")
         result=in_memory_counter.ClearEntireCache()
         self.response.out.write("Done. ClearEntireCache succeeded = " + str(result))
-      
+
+
 class WritebackAllCountersHandler(webapp.RequestHandler):
     """ Writes back all counters from memory to the datastore
     """
@@ -137,27 +137,29 @@ class WritebackAllCountersHandler(webapp.RequestHandler):
             result=in_memory_counter.WritebackAllCounters(namespace, delete)
         
         self.response.out.write("Done. WritebackAllCounters succeeded = " + str(result))
-    
+
+
 class GetCountHandler(webapp.RequestHandler):
     """ Get counter value from memcache or datastore
     """
-    
     def get(self):
         name = self.request.get('name')
         namespace = self.request.get('namespace')
-        count = counter.LoadAndGetCount(name, namespace)
+        count = counter.load_and_get_count(name, namespace)
         if count:
             self.response.set_status(200) 
             self.response.out.write(count)
         else:
             self.response.set_status(404)
-            
+
+
 class RedirectToCounterAdminHandler(webapp.RequestHandler):
     """ For convenience / demo purposes, redirect to counter admin page.
     """
     def get(self):
         self.redirect('/livecount/counter_admin')
-            
+
+
 def GetMemcacheStats():
     stats = memcache.get_stats()
     return stats

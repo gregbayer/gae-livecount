@@ -2,7 +2,7 @@
 
 Livecount is a fast and simple implementation of real-time counters for Google AppEngine.  The goal is to support the counting of real-time events such as impressions, clicks, conversions, and other user actions and to do so in an efficient and scalable way.  Since Livecount increments counts in memory, it is  almost always faster than basic sharded counters, potentially trading off some consistency and durability.  To ensure maximum consistency and durability, by default Livecount attempts to asynchronously write each update to the datastore.
 
-Livecount counters are extremely simple to use.  Just import the module and call "LoadAndIncrementCounter" with a key name and increment delta.  Livecount also supports arbitrary string keys allowing more complex character-delimited hierarchal key and supports the use of appengine's memcache namespaces maintain separate counters with the same key.
+Livecount counters are extremely simple to use.  Just import the module and call load_and_increment_counter() with a key name and increment delta.  Livecount also supports arbitrary string keys allowing more complex character-delimited hierarchal key and supports the use of appengine's memcache namespaces maintain separate counters with the same key.
 
 # Getting started
 
@@ -20,7 +20,7 @@ To add Livecount to your project:
 2. Add entries to your app.yaml and queue.yaml based on included files.
 3. Copy the livecount directory into your appengine project
 4. Include "from counters import counter" at the top of you python file
-5. Call counter.LoadAndIncrementCounter(...) as in example.py
+5. Call counter.load_and_increment_counter(...) as in example.py
 
 # Performance and CAP tradeoffs
 
