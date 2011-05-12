@@ -23,7 +23,7 @@ import logging
 import wsgiref.handlers
 
 """ 
-  Live-Count is a memcache-based counter api with asyncronous writes to persist counts to datastore.
+  Livecount is a memcache-based counter api with asyncronous writes to persist counts to datastore.
   
   Semantics:
    - Write-Behind
