@@ -59,11 +59,19 @@ def load_and_increment_counter(name, delta, namespace='default', batch_size=None
     Setting batch size allows control of how often a writeback worker is created.
     By default, this happens at every increment to ensure maximum durability.
     If there is already a worker waiting to write the value of a counter, another will not be created.
+    
+    Warning: There is a potential race condition here. If two processes try to load
+    the same value from the datastore, one's update may be lost.
+
+    Thoughts: This could be avoided by wrapping the critical section in a transaction, at the cost of some performance.
+    In practice, this is rarely a problem, since counters that are frequently updated usually stay resident
+    in memcache and counters that are infrequently updated are unlikely to have two updates come in at the
+    same time. For some applications, the potential for lost updates is unacceptable. In these cases, it would
+    make sense to use AppEngine's transaction mechanism here.
+    
+    TODO: Think more about whether we care about this.
     """
     #logging.info("Incrementing counter, name = " + name)
-    # Warning: There is a race condition here. If two processes try to load
-    # the same value from the datastore, one's update may be lost.
-    # TODO: Think more about whether we care about this...
     current_count = None
     
     incr_reslt = None
