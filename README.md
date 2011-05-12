@@ -26,7 +26,7 @@ To add Livecount to your project:
 
 Livecount makes extensive use of Google AppEngine's memcache implementation.  This allows maximum performance, while leaving counts vulnerable to a memcache eviction.  This risk is mitigated by using Google AppEngine's taskqueue to asynchronous write the value of a count back to the datastore after any change.  To avoid unnecessary overhead, a new asynchronous worker is only created if one is not already waiting to update a giving counter's value.  If one is already in the queue, it simply writes back the most recent count.  The resulting risk of lost counts is minimal and acceptable for many real-time counter use cases.
 
-If writeback loads are higher than desired on frequently updated counters, Livecount includes the option to delay writebacks until a given batch size is reached.  This effectively allows the developer to select the appropriate tradoff between performance and tolerance for lost counts each time a counter is incremented.
+If writeback loads are higher than desired on frequently updated counters, Livecount includes the option to delay writebacks until a given batch size is reached.  This allows the developer to select the appropriate tradoff between performance and tolerance for lost counts each time a counter is incremented.
 
 # Scalability Limiatations
 
