@@ -14,7 +14,7 @@ To try Livecount:
 4. Navigate to http://localhost:8080/livecount/counter_admin
 5. Choose to login as an administrator
 
-To add Livecount to your project:
+To add Livecount to your AppEngine project:
 
 1. git clone git://github.com/gregbayer/gae-livecount.git
 2. Add entries to your app.yaml and queue.yaml based on included files.
