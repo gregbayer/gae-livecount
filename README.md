@@ -2,7 +2,7 @@
 
 Livecount is a fast and simple implementation of real-time counters for Google AppEngine.  The goal is to support the counting of real-time events such as impressions, clicks, conversions, and other user actions and to do so in an efficient and scalable way.  Since Livecount increments counts in memory, it is almost always faster than basic sharded counters, potentially trading off some consistency and durability.  To ensure maximum consistency and durability, by default Livecount attempts to asynchronously write each update to the datastore.
 
-Livecount counters are extremely simple to use.  Just import the module and call load_and_increment_counter with a key name and increment delta.  Livecount counters are based on simple string keys and support namespaces to maintain separate counters with the same key. Since arbitrary strings are supported, character-delimited hierarchal keys can be used to further group related counters.
+Livecount counters are extremely simple to use.  Just import the module and call load_and_increment_counter with a key name and increment delta.  Optional parameters include the period, for specifying the desired datetime of saved key name, and period_type, for specifying the granularity of the count (seconds, minutes, hours, days, weeks, months, and years).  Livecount counters are based on simple string keys and support namespaces to maintain separate counters with the same key. Since arbitrary strings are supported, character-delimited hierarchal keys can be used to further group related counters.
 
 # Getting started
 
