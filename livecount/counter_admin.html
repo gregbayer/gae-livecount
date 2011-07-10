@@ -1,46 +1,95 @@
 <!DOCTYPE HTML>
 <html>
-  <head>
-    <title> GAE-Livecount - Counter Admin </title>
-  </head>
-  <body>
+    <head>
+        <title> GAE-Livecount - Counter Admin </title>
+    </head>
+    <body>
 
-	<form action="/livecount/counter_admin" method="get">      
-      <input type="hidden" name="counter" value="{{ counter_name }}" />
-      <h2>Namespace: <input type="input" name="namespace" value="{{ namespace }}" /></h2>
-      <p><input type="submit" value="Change Namespace" /></p>
-    </form>
+        <h3>Modify Counter:</h3>
+        <form action="/livecount/counter_admin" method="post">
+            <div>
+                <div style="width: 250px; height: 30px;">
+                    <label style="float: left">Namespace:</label>
+                    <input style="float: right" type="input" name="namespace" value="{{ namespace }}" />
+                </div>
+                <div style="width: 250px; height: 30px;">
+                    <label style="float: left">Period Type(s):</label>
+                    <input style="float: right" type="input" name="period_types" value="{{ period_types }}" />
+                </div>
+                <div style="width: 250px; height: 30px;">
+                    <label style="float: left">Period:</label>
+                    <input style="float: right" type="input" name="period" value="{{ period }}" />
+                </div>
+                <div style="width: 250px; height: 30px;">
+                    <label style="float: left">Counter Name:</label>
+                    <input style="float: right" type="input" name="counter_name" value="{{ counter_name }}" />
+                </div>
+                <div style="width: 250px; height: 30px;">
+                    <label style="float: left">Delta:</label>
+                    <input style="float: right" type="input" name="delta" value="{{ delta }}" />
+                </div>
+                
+                <div style="width: 250px">
+                    <input style="float: left" type="submit" name="type" value="Increment Counter" />
+                    <input style="float: left" type="submit" name="type" value="Decrement Counter" />
+                </div>
+                <div style="clear: both"></div>
+            </div>
+        </form>
+        
+        {% if modified_counter %}
+        <h3>Updated counter:</h3>
+        <p>
+            {{ modified_counter.count }} = {{ modified_counter.key.name }}
+            <br>
+        </p>
+        {% endif %}
+        <br>
+        <br>
+        
 
-    </form>
+        <h3>Filter Top 20 LivecountCounter Values:</h3>
 
-	<h2>Top 20 LivecountCounter Values:</h2>
-	<p>
-	{% for counter in counters %}
-    {{ counter.key.name }} = {{ counter.count }}<br>
-    {% endfor %}
-	</p>
-	
-    <p><input type="button" value="Refresh List" onClick="location.href='/livecount/counter_admin?namespace={{ namespace }}&counter_name={{ counter_name }}&delta={{ delta }}'"/></p>
+        <form action="/livecount/counter_admin" method="get">
+            <div>
+                <div style="width: 250px; height: 30px;">
+                    <label style="float: left">Namespace:</label>
+                    <input style="float: right" type="input" name="namespace" value="{{ namespace }}" />
+                </div>
+                <div style="width: 250px; height: 30px;">
+                    <label style="float: left">Period Type:</label>
+                    <input style="float: right" type="input" name="period_type" value="{{ period_type }}" />
+                </div>
+                <div style="width: 250px; height: 30px;">
+                    <label style="float: left">Period:</label>
+                    <input style="float: right" type="input" name="period" value="{{ period }}" />
+                </div>
+                <div style="width: 250px; height: 30px;">
+                    <label style="float: left">Counter Name:</label>
+                    <input style="float: right" type="input" name="counter_name" value="{{ counter_name }}" />
+                </div>
+                
+                <div style="width: 250px">
+                    <input style="float: left" type="submit" value="Filter" />
+                </div>
+                <div style="clear: both"></div>
+            </div>
+        </form>
 
-	{% if modified_counter %}
-	<h2>Upadated counter:</h2>
-	<p>
-    {{ modified_counter.key.name }} = {{ modified_counter.count }}<br>
-	</p>
-	{% endif %}
-	
-	<h2>Memcache Stats:</h2>
-	<p>{{ stats }}</p>
-    
-    <h2>Modify Counter:</h2>
-    <form action="/livecount/counter_admin" method="post">      
-      <p>Counter Name: <input type="input" name="counter" value="{{ counter_name }}" /></p>
-      <p>Namespace: <input type="input" name="namespace" value="{{ namespace }}" /></p>
-      <p>Delta: <input type="input" name="delta" value="{{ delta }}" /></p>
-      <p><input type="submit" name="type" value="Increment Counter" /></p>
-      <p><input type="submit" name="type" value="Decrement Counter" /></p>
-    </form>
+        <p>
+            {% for counter in counters %}
+            {{ counter.count }} = {{ counter.key.name }}
+            <br>
+            {% endfor %}
+        </p>
+        <br>
+        <br>
+        
+        
+        <h3>Memcache Stats:</h3>
+        <p>
+            {{ stats }}
+        </p>
 
-
-  </body>
-</html> 
+    </body>
+</html>
