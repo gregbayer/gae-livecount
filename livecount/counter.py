@@ -72,11 +72,11 @@ class PeriodType(object):
 
 
 class LivecountCounter(db.Model):
+    namespace = db.StringProperty(default="default")
+    period_type = db.StringProperty(default=PeriodType.ALL)
+    period = db.StringProperty()
     name = db.StringProperty()
     count = db.IntegerProperty()
-    period = db.StringProperty()
-    period_type = db.StringProperty(default=PeriodType.ALL)
-    namespace = db.StringProperty(default="default")
     
     @staticmethod
     def KeyName(namespace, period_type, period, name):
@@ -89,10 +89,12 @@ class LivecountCounter(db.Model):
         return period_type + ":" + scoped_period + ":" + name
 
 
-def load_and_get_count(name, period, period_type='day', namespace='default'):
-    partial_key = LivecountCounter.PartialKeyName(period_type, period, name)
+def load_and_get_count(name, namespace='default', period_type='day', period=datetime.now()):
     # Try memcache first
+    partial_key = LivecountCounter.PartialKeyName(period_type, period, name)
     count =  memcache.get(partial_key, namespace=namespace) 
+    
+    # Not in memcache
     if count is None:
         # See if this counter already exists in the datastore
         full_key = LivecountCounter.KeyName(namespace, period_type, period, name)
@@ -102,10 +104,11 @@ def load_and_get_count(name, period, period_type='day', namespace='default'):
         if record:
             count = record.count
             memcache.add(partial_key, count, namespace=namespace)
+    
     return count
 
 
-def load_and_increment_counter(name, period, period_types, delta, namespace='default', batch_size=None):
+def load_and_increment_counter(name, period=datetime.now(), period_types=[PeriodType.DAY], namespace='default', delta=1, batch_size=None):
     """
     Setting batch size allows control of how often a writeback worker is created.
     By default, this happens at every increment to ensure maximum durability.
@@ -118,14 +121,14 @@ def load_and_increment_counter(name, period, period_types, delta, namespace='def
     for period_type in period_types:
         current_count = None
         
-        incr_result = None
+        result = None
         partial_key = LivecountCounter.PartialKeyName(period_type, period, name)
         if delta >= 0:
-            incr_result = memcache.incr(partial_key, delta, namespace=namespace)
+            result = memcache.incr(partial_key, delta, namespace=namespace)
         else: # Since increment by negative number is not supported, convert to decrement
-            incr_result = memcache.decr(partial_key, -delta, namespace=namespace)
+            result = memcache.decr(partial_key, -delta, namespace=namespace)
         
-        if incr_result is None:
+        if result is None:
             # See if this counter already exists in the datastore
             full_key = LivecountCounter.KeyName(namespace, period_type, period, name)
             record = LivecountCounter.get_by_key_name(full_key)
@@ -141,6 +144,7 @@ def load_and_increment_counter(name, period, period_types, delta, namespace='def
                 if batch_size: current_count = delta
         else:
             if batch_size: current_count = memcache.get(partial_key, namespace=namespace)
+            
         # If batch_size is set, only try creating one worker per batch
         if not batch_size or (batch_size and current_count % batch_size == 0):
             if memcache.add(partial_key + '_dirty', delta, namespace=namespace):
@@ -148,29 +152,50 @@ def load_and_increment_counter(name, period, period_types, delta, namespace='def
                 taskqueue.add(queue_name='livecount-writebacks', url='/livecount/worker', params={'name': name, 'period': period, 'period_type': period_type, 'namespace': namespace}) # post parameter
 
 
-def load_and_decrement_counter(name, period, period_types, delta, namespace='default', batch_size=None):
-    load_and_increment_counter(name, period, period_types, -delta, namespace, batch_size)
-   
+def load_and_decrement_counter(name, period=datetime.now(), period_types=[PeriodType.DAY], namespace='default', delta=1, batch_size=None):
+    load_and_increment_counter(name, period, period_types, namespace, -delta, batch_size)
+
+    
+def GetMemcacheStats():
+    stats = memcache.get_stats()
+    return stats
+
 
 class LivecountCounterWorker(webapp.RequestHandler):
     def post(self):
-        name = self.request.get('name')
-        period = self.request.get('period')
-        period_type = self.request.get('period_type')
         namespace = self.request.get('namespace')
+        period_type = self.request.get('period_type')
+        period = self.request.get('period')
+        name = self.request.get('name')
         
-        partial_key = LivecountCounter.PartialKeyName(period_type, period, name)
         full_key = LivecountCounter.KeyName(namespace, period_type, period, name)
+        partial_key = LivecountCounter.PartialKeyName(period_type, period, name)
        
         memcache.delete(partial_key + '_dirty', namespace=namespace)
-        value = memcache.get(partial_key, namespace=namespace)
-        if value is None:
+        cached_count = memcache.get(partial_key, namespace=namespace)
+        if cached_count is None:
             logging.error('LivecountCounterWorker: Failure for partial key=%s', partial_key)
             return
         
         # add new row in datastore
         scoped_period = PeriodType.find_scope(period_type, period)
-        LivecountCounter(key_name=full_key, count=value, name=name, period=scoped_period, period_type=period_type, namespace=namespace).put()
+        LivecountCounter(key_name=full_key, namespace=namespace, period_type=period_type, period=scoped_period, name=name, count=cached_count).put()
+
+
+class WritebackAllCountersHandler(webapp.RequestHandler):
+    """
+    Writes back all counters from memory to the datastore
+    """
+    def get(self):
+        namespace = self.request.get('namespace')
+        delete = self.request.get('delete')
+        
+        logging.info("Writing back all counters from memory to the datastore. Namespace=%s. Delete from memory=%s." % (str(namespace), str(delete)))
+        result = False
+        while not result:
+            result=in_memory_counter.WritebackAllCounters(namespace, delete)
+        
+        self.response.out.write("Done. WritebackAllCounters succeeded = " + str(result))
 
 
 class ClearEntireCacheHandler(webapp.RequestHandler):
@@ -179,43 +204,9 @@ class ClearEntireCacheHandler(webapp.RequestHandler):
     """
     def get(self):
         logging.info("Deleting all counters in memcache. Any counts not previously flushed will be lost.")
+        
         result = in_memory_counter.ClearEntireCache()
         self.response.out.write("Done. ClearEntireCache succeeded = " + str(result))
-
-
-class WritebackAllCountersHandler(webapp.RequestHandler):
-    """
-    Writes back all counters from memory to the datastore
-    """
-    
-    def get(self):
-        namespace = self.request.get('namespace')
-        delete = self.request.get('delete')
-        logging.info("Writing back all counters from memory to the datastore. Namespace=%s. Delete from memory=%s." % (str(namespace), str(delete)))
-        result = False
-        while not result:
-            result=in_memory_counter.WritebackAllCounters(namespace, delete)
-        
-        self.response.out.write("Done. WritebackAllCounters succeeded = " + str(result))
-
-"""
-class GetCountHandler(webapp.RequestHandler):
-    
-    Get counter value from memcache or datastore
-    
-    def get(self):
-        name = self.request.get('name')
-        period = self.request.get('period')
-        period_type = self.request.get('period_type')
-        namespace = self.request.get('namespace')
-        
-        count = counter.load_and_get_count(namespace, period_type, period, name)
-        if count:
-            self.response.set_status(200) 
-            self.response.out.write(count)
-        else:
-            self.response.set_status(404)
-            """
 
 
 class RedirectToCounterAdminHandler(webapp.RequestHandler):
@@ -225,21 +216,16 @@ class RedirectToCounterAdminHandler(webapp.RequestHandler):
         self.redirect('/livecount/counter_admin')
 
 
-def GetMemcacheStats():
-    stats = memcache.get_stats()
-    return stats
-
-
 def main():
     logging.getLogger().setLevel(logging.DEBUG)
     application = webapp.WSGIApplication([
          ('/livecount/worker', LivecountCounterWorker),
-         ('/livecount/clear_entire_cache', ClearEntireCacheHandler),
          ('/livecount/writeback_all_counters', WritebackAllCountersHandler),
-         #('/livecount/get_count', GetCountHandler),
+         ('/livecount/clear_entire_cache', ClearEntireCacheHandler),
          ('/', RedirectToCounterAdminHandler)
     ], debug=True)
     wsgiref.handlers.CGIHandler().run(application)
+
 
 if __name__ == '__main__':
     main()

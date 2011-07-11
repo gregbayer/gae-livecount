@@ -67,8 +67,9 @@ class CounterHandler(webapp.RequestHandler):
             counter_entities_query.filter("namespace = ", namespace)
         if period_type:
             counter_entities_query.filter("period_type = ", period_type)
+        scoped_period = PeriodType.find_scope(period_type, period)
         if period:
-            counter_entities_query.filter("period = ", period)
+            counter_entities_query.filter("period = ", scoped_period)
         counter_entities = counter_entities_query.fetch(int(fetch_limit))
         logging.info("counter_entities: " + str(counter_entities))
     
@@ -100,9 +101,9 @@ class CounterHandler(webapp.RequestHandler):
         type = self.request.get('type')
         
         if type == "Increment Counter":
-            counter.load_and_increment_counter(name, period, period_types.split(","), long(delta), namespace=namespace)
+            counter.load_and_increment_counter(name=name, period=period, period_types=period_types.split(","), namespace=namespace, delta=long(delta))
         elif type == "Decrement Counter":
-            counter.load_and_decrement_counter(name, period, period_types.split(","), long(delta), namespace=namespace)
+            counter.load_and_decrement_counter(name=name, period=period, period_types=period_types.split(","), namespace=namespace, delta=long(delta))
     
         logging.info("Redirecting to: /livecount/counter_admin?namespace=" + namespace + "&period_type=" + period_type + "&period_types=" + period_types + "&period=" + period + "&counter_name=" + name + "&delta=" + delta)
         self.redirect("/livecount/counter_admin?namespace=" + namespace + "&period_type=" + period_type + "&period_types=" + period_types + "&period=" + period + "&counter_name=" + name + "&delta=" + delta)
