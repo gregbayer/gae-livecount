@@ -4,6 +4,9 @@ Livecount is a fast and simple implementation of real-time counters for Google A
 
 Livecount counters are extremely simple to use.  Just import the module and call load_and_increment_counter with a key name and increment delta.  Optional parameters include the period, for specifying the desired datetime of saved key name, and period_type, for specifying the granularity of the count (seconds, minutes, hours, days, weeks, months, and years).  Livecount counters are based on simple string keys and support namespaces to maintain separate counters with the same key. Since arbitrary strings are supported, character-delimited hierarchal keys can be used to further group related counters.
 
+* [Livecount Project](http://gbayer.com/projects/livecount/)
+* [Pulse’s experience with Livecount](http://eng.pulse.me/introducing-livecount/)
+
 # Getting started
 
 To try Livecount:
