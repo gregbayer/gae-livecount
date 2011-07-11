@@ -98,7 +98,6 @@ def load_and_get_count(name, namespace='default', period_type='all', period=date
     if count is None:
         # See if this counter already exists in the datastore
         full_key = LivecountCounter.KeyName(namespace, period_type, period, name)
-        logging.info("full_key: " + full_key)
         record = LivecountCounter.get_by_key_name(full_key)
         # If counter exists in the datastore, but is not currently in memcache, add it
         if record:
