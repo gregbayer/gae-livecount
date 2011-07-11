@@ -108,7 +108,7 @@ def load_and_get_count(name, namespace='default', period_type='day', period=date
     return count
 
 
-def load_and_increment_counter(name, period=datetime.now(), period_types=[PeriodType.DAY], namespace='default', delta=1, batch_size=None):
+def load_and_increment_counter(name, period=datetime.now(), period_types=[PeriodType.ALL], namespace='default', delta=1, batch_size=None):
     """
     Setting batch size allows control of how often a writeback worker is created.
     By default, this happens at every increment to ensure maximum durability.
@@ -152,7 +152,7 @@ def load_and_increment_counter(name, period=datetime.now(), period_types=[Period
                 taskqueue.add(queue_name='livecount-writebacks', url='/livecount/worker', params={'name': name, 'period': period, 'period_type': period_type, 'namespace': namespace}) # post parameter
 
 
-def load_and_decrement_counter(name, period=datetime.now(), period_types=[PeriodType.DAY], namespace='default', delta=1, batch_size=None):
+def load_and_decrement_counter(name, period=datetime.now(), period_types=[PeriodType.ALL], namespace='default', delta=1, batch_size=None):
     load_and_increment_counter(name, period, period_types, namespace, -delta, batch_size)
 
     
