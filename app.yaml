@@ -19,13 +19,12 @@ handlers:
   script: livecount/counter_admin.py
   login: admin
 
-- url: /livecount/get_counter
-  script: livecount/counter_admin.py
-  login: admin
-
 - url: /livecount/.*
   script: livecount/counter.py
   login: admin
+  
+- url: /examples
+  script: examples.py
 
 # For convenience / demo only
 # redirects to counter admin page

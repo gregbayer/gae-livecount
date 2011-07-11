@@ -89,7 +89,7 @@ class LivecountCounter(db.Model):
         return period_type + ":" + scoped_period + ":" + name
 
 
-def load_and_get_count(name, namespace='default', period_type='day', period=datetime.now()):
+def load_and_get_count(name, namespace='default', period_type='all', period=datetime.now()):
     # Try memcache first
     partial_key = LivecountCounter.PartialKeyName(period_type, period, name)
     count =  memcache.get(partial_key, namespace=namespace) 
@@ -98,8 +98,8 @@ def load_and_get_count(name, namespace='default', period_type='day', period=date
     if count is None:
         # See if this counter already exists in the datastore
         full_key = LivecountCounter.KeyName(namespace, period_type, period, name)
+        logging.info("full_key: " + full_key)
         record = LivecountCounter.get_by_key_name(full_key)
-        count = None
         # If counter exists in the datastore, but is not currently in memcache, add it
         if record:
             count = record.count
