@@ -41,7 +41,7 @@ The maximum number of queues could also be reached.  At this point, a different 
 
 # Usage at Pulse
 
-Livecounts has been used extensively at [Pulse News](http://pulsene.ws) for counting everything from share and click events to mobile client A/B test results. 
+Livecounts has been used extensively at [Pulse News](http://pulsene.ws) for counting everything from share and click events to mobile client A/B test results. For more info, check out: [Pulse’s experience with Livecount](http://eng.pulse.me/introducing-livecount/)  
 
 # Other Projects and Information
 
