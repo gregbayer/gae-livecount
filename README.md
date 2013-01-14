@@ -22,7 +22,7 @@ To add Livecount to your AppEngine project:
 1. git clone git://github.com/gregbayer/gae-livecount.git
 2. Add entries to your app.yaml and queue.yaml based on included files.
 3. Copy the livecount directory into your appengine project
-4. Include "from livecount import counter" at the top of you python file
+4. Include "from livecount import counter" at the top of your python file
 5. Call counter.load_and_increment_counter(...) as in example.py
 
 # Performance and CAP tradeoffs
